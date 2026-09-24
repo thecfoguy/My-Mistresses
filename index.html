@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+  >
+
+  <meta name="theme-color" content="#000000">
+
+  <meta
+    name="mobile-web-app-capable"
+    content="yes"
+  >
+
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  >
+
+  <meta
+    name="apple-mobile-web-app-title"
+    content="My Mistresses"
+  >
+
+  <title>My Mistresses</title>
+
+  <link rel="manifest" href="./manifest.json">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000000;
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      overscroll-behavior: none;
+    }
+
+    body {
+      position: fixed;
+      inset: 0;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: none;
+      outline: none;
+      cursor: pointer;
+    }
+
+    #app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      overflow: hidden;
+    }
+
+    .header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+
+      z-index: 20;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      padding-top: calc(env(safe-area-inset-top) + 14px);
+      padding-left: 70px;
+      padding-right: 70px;
+
+      pointer-events: none;
+    }
+
+    .title {
+      margin: 0;
+      padding: 0;
+
+      color: #ffffff;
+
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+
+      text-align: center;
+
+      text-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.9),
+        0 2px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    .gallery {
+      position: absolute;
+      inset: 0;
+
+      overflow: hidden;
+
+      touch-action: pan-y;
+    }
+
+    .photo-stage {
+      position: absolute;
+      inset: 0;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      overflow: hidden;
+
+      transform: translateX(0);
+
+      transition:
+        transform 260ms ease,
+        opacity 260ms ease;
+    }
+
+    .photo-stage.dragging {
+      transition: none;
+    }
+
+    .photo {
+      width: 100%;
+      height: 100%;
+
+      object-fit: contain;
+
+      user-select: none;
+      -webkit-user-drag: none;
+
+      background: #000000;
+    }
+
+    .empty-state {
+      position: absolute;
+      inset: 0;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      padding: 30px;
+
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 92px;
+      height: 92px;
+
+      margin-bottom: 22px;
+
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      border-radius: 50%;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: rgba(255, 255, 255, 0.85);
+
+      font-size: 48px;
+      font-weight: 300;
+    }
+
+    .empty-title {
+      margin-bottom: 8px;
+
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .empty-text {
+      max-width: 280px;
+
+      color: rgba(255, 255, 255, 0.65);
+
+      font-size: 16px;
+      line-height: 1.45;
+    }
+
+    .bottom-gradient {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+
+      height: 220px;
+
+      z-index: 8;
+
+      pointer-events: none;
+
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0),
+          rgba(0, 0, 0, 0.35) 30%,
+          rgba(0, 0, 0, 0.9) 100%
+        );
+    }
+
+    .caption-area {
+      position: absolute;
+
+      left: 20px;
+      right: 20px;
+
+      bottom: calc(env(safe-area-inset-bottom) + 88px);
+
+      z-index: 12;
+
+      text-align: center;
+
+      pointer-events: none;
+    }
+
+    .bike-name {
+      margin: 0;
+
+      color: #ffffff;
+
+      font-size: 24px;
+      font-weight: 700;
+
+      line-height: 1.2;
+
+      text-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.95),
+        0 2px 10px rgba(0, 0, 0, 0.9);
+
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .counter {
+      margin-top: 7px;
+
+      color: rgba(255, 255, 255, 0.72);
+
+      font-size: 14px;
+      font-weight: 600;
+
+      text-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.9);
+    }
+
+    .controls {
+      position: absolute;
+
+      left: 0;
+      right: 0;
+
+      bottom: calc(env(safe-area-inset-bottom) + 20px);
+
+      z-index: 15;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      gap: 16px;
+    }
+
+    .control-button {
+      min-width: 82px;
+      height: 42px;
+
+      padding: 0 17px;
+
+      border-radius: 21px;
+
+      background: rgba(40, 40, 40, 0.88);
+      color: #ffffff;
+
+      border: 1px solid rgba(255, 255, 255, 0.2);
+
+      font-size: 15px;
+      font-weight: 700;
+
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+
+      transition:
+        transform 120ms ease,
+        background 120ms ease;
+    }
+
+    .control-button:active {
+      transform: scale(0.95);
+      background: rgba(70, 70, 70, 0.95);
+    }
+
+    .delete-button {
+      color: #ff5757;
+    }
+
+    .add-button {
+      position: absolute;
+
+      right: 20px;
+
+      bottom: calc(env(safe-area-inset-bottom) + 18px);
+
+      z-index: 30;
+
+      width: 56px;
+      height: 56px;
+
+      border-radius: 50%;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 0;
+
+      background: #ffffff;
+      color: #000000;
+
+      font-size: 36px;
+      font-weight: 300;
+      line-height: 1;
+
+      box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.45);
+
+      transition:
+        transform 120ms ease,
+        opacity 120ms ease;
+    }
+
+    .add-button:active {
+      transform: scale(0.92);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+
+      z-index: 100;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 24px;
+
+      background: rgba(0, 0, 0, 0.75);
+
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 380px;
+
+      padding: 24px;
+
+      border-radius: 22px;
+
+      background: #181818;
+
+      border: 1px solid rgba(255, 255, 255, 0.12);
+
+      box-shadow:
+        0 18px 60px rgba(0, 0, 0, 0.65);
+    }
+
+    .modal-title {
+      margin: 0 0 18px 0;
+
+      color: #ffffff;
+
+      font-size: 22px;
+      font-weight: 700;
+
+      text-align: center;
+    }
+
+    .name-input {
+      width: 100%;
+      height: 50px;
+
+      padding: 0 16px;
+
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 14px;
+
+      outline: none;
+
+      background: #262626;
+      color: #ffffff;
+
+      font-size: 17px;
+    }
+
+    .name-input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .name-input:focus {
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .modal-buttons {
+      display: flex;
+
+      gap: 12px;
+
+      margin-top: 20px;
+    }
+
+    .modal-button {
+      flex: 1;
+
+      height: 46px;
+
+      border-radius: 14px;
+
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .cancel-button {
+      background: #303030;
+      color: #ffffff;
+    }
+
+    .save-button {
+      background: #ffffff;
+      color: #000000;
+    }
+
+    .delete-modal-button {
+      background: #d92d2d;
+      color: #ffffff;
+    }
+
+    #photoInput {
+      display: none;
+    }
+
+    @media (min-width: 700px) {
+      #app {
+        max-width: 520px;
+        margin: 0 auto;
+
+        box-shadow:
+          0 0 80px rgba(255, 255, 255, 0.04);
+      }
+
+      body {
+        background: #080808;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+
+    <div class="header">
+      <h1 class="title">My Mistresses</h1>
+    </div>
+
+    <div
+      id="gallery"
+      class="gallery"
+    >
+
+      <div
+        id="photoStage"
+        class="photo-stage hidden"
+      >
+        <img
+          id="photo"
+          class="photo"
+          alt="Motorcycle"
+          draggable="false"
+        >
+      </div>
+
+      <div
+        id="emptyState"
+        class="empty-state"
+      >
+        <div class="empty-icon">+</div>
+
+        <div class="empty-title">
+          Add your first mistress
+        </div>
+
+        <div class="empty-text">
+          Tap the + button and choose a motorcycle photo from your phone.
+        </div>
+      </div>
+
+    </div>
+
+    <div
+      id="bottomGradient"
+      class="bottom-gradient hidden"
+    ></div>
+
+    <div
+      id="captionArea"
+      class="caption-area hidden"
+    >
+      <div
+        id="bikeName"
+        class="bike-name"
+      ></div>
+
+      <div
+        id="counter"
+        class="counter"
+      ></div>
+    </div>
+
+    <div
+      id="controls"
+      class="controls hidden"
+    >
+
+      <button
+        id="editButton"
+        class="control-button"
+        type="button"
+      >
+        Edit
+      </button>
+
+      <button
+        id="deleteButton"
+        class="control-button delete-button"
+        type="button"
+      >
+        Delete
+      </button>
+
+    </div>
+
+    <button
+      id="addButton"
+      class="add-button"
+      type="button"
+      aria-label="Add motorcycle"
+    >
+      +
+    </button>
+
+    <input
+      id="photoInput"
+      type="file"
+      accept="image/*"
+    >
+
+    <div
+      id="nameModal"
+      class="modal-backdrop hidden"
+    >
+
+      <div class="modal">
+
+        <h2
+          id="nameModalTitle"
+          class="modal-title"
+        >
+          Name Your Mistress
+        </h2>
+
+        <input
+          id="nameInput"
+          class="name-input"
+          type="text"
+          maxlength="80"
+          placeholder="Motorcycle name"
+          autocomplete="off"
+        >
+
+        <div class="modal-buttons">
+
+          <button
+            id="cancelNameButton"
+            class="modal-button cancel-button"
+            type="button"
+          >
+            Cancel
+          </button>
+
+          <button
+            id="saveNameButton"
+            class="modal-button save-button"
+            type="button"
+          >
+            Save
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div
+      id="deleteModal"
+      class="modal-backdrop hidden"
+    >
+
+      <div class="modal">
+
+        <h2 class="modal-title">
+          Delete this motorcycle?
+        </h2>
+
+        <div class="modal-buttons">
+
+          <button
+            id="cancelDeleteButton"
+            class="modal-button cancel-button"
+            type="button"
+          >
+            Cancel
+          </button>
+
+          <button
+            id="confirmDeleteButton"
+            class="modal-button delete-modal-button"
+            type="button"
+          >
+            Delete
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const DB_NAME = "myMistressesDB";
+    const DB_VERSION = 1;
+    const STORE_NAME = "motorcycles";
+
+    let db = null;
+
+    let motorcycles = [];
+
+    let currentIndex = 0;
+
+    let pendingPhoto = null;
+
+    let editingMode = false;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    let touchCurrentX = 0;
+
+    let dragging = false;
+
+    const SWIPE_TRIGGER = 65;
+
+    const gallery =
+      document.getElementById("gallery");
+
+    const photoStage =
+      document.getElementById("photoStage");
+
+    const photo =
+      document.getElementById("photo");
+
+    const emptyState =
+      document.getElementById("emptyState");
+
+    const bottomGradient =
+      document.getElementById("bottomGradient");
+
+    const captionArea =
+      document.getElementById("captionArea");
+
+    const bikeName =
+      document.getElementById("bikeName");
+
+    const counter =
+      document.getElementById("counter");
+
+    const controls =
+      document.getElementById("controls");
+
+    const addButton =
+      document.getElementById("addButton");
+
+    const editButton =
+      document.getElementById("editButton");
+
+    const deleteButton =
+      document.getElementById("deleteButton");
+
+    const photoInput =
+      document.getElementById("photoInput");
+
+    const nameModal =
+      document.getElementById("nameModal");
+
+    const nameModalTitle =
+      document.getElementById("nameModalTitle");
+
+    const nameInput =
+      document.getElementById("nameInput");
+
+    const cancelNameButton =
+      document.getElementById("cancelNameButton");
+
+    const saveNameButton =
+      document.getElementById("saveNameButton");
+
+    const deleteModal =
+      document.getElementById("deleteModal");
+
+    const cancelDeleteButton =
+      document.getElementById("cancelDeleteButton");
+
+    const confirmDeleteButton =
+      document.getElementById("confirmDeleteButton");
+
+    function openDatabase() {
+      return new Promise(
+        (resolve, reject) => {
+
+          const request =
+            indexedDB.open(
+              DB_NAME,
+              DB_VERSION
+            );
+
+          request.onupgradeneeded =
+            function(event) {
+
+              const database =
+                event.target.result;
+
+              if (
+                !database.objectStoreNames.contains(
+                  STORE_NAME
+                )
+              ) {
+
+                const store =
+                  database.createObjectStore(
+                    STORE_NAME,
+                    {
+                      keyPath: "id",
+                      autoIncrement: true
+                    }
+                  );
+
+                store.createIndex(
+                  "created",
+                  "created",
+                  {
+                    unique: false
+                  }
+                );
+              }
+            };
+
+          request.onsuccess =
+            function(event) {
+
+              db =
+                event.target.result;
+
+              resolve(db);
+            };
+
+          request.onerror =
+            function(event) {
+
+              reject(
+                event.target.error
+              );
+            };
+        }
+      );
+    }
+
+    function getAllMotorcycles() {
+      return new Promise(
+        (resolve, reject) => {
+
+          const transaction =
+            db.transaction(
+              STORE_NAME,
+              "readonly"
+            );
+
+          const store =
+            transaction.objectStore(
+              STORE_NAME
+            );
+
+          const request =
+            store.getAll();
+
+          request.onsuccess =
+            function() {
+
+              const items =
+                request.result || [];
+
+              items.sort(
+                (a, b) =>
+                  a.created - b.created
+              );
+
+              resolve(items);
+            };
+
+          request.onerror =
+            function(event) {
+
+              reject(
+                event.target.error
+              );
+            };
+        }
+      );
+    }
+
+    function addMotorcycle(item) {
+      return new Promise(
+        (resolve, reject) => {
+
+          const transaction =
+            db.transaction(
+              STORE_NAME,
+              "readwrite"
+            );
+
+          const store =
+            transaction.objectStore(
+              STORE_NAME
+            );
+
+          const request =
+            store.add(item);
+
+          request.onsuccess =
+            function() {
+
+              resolve(
+                request.result
+              );
+            };
+
+          request.onerror =
+            function(event) {
+
+              reject(
+                event.target.error
+              );
+            };
+        }
+      );
+    }
+
+    function updateMotorcycle(item) {
+      return new Promise(
+        (resolve, reject) => {
+
+          const transaction =
+            db.transaction(
+              STORE_NAME,
+              "readwrite"
+            );
+
+          const store =
+            transaction.objectStore(
+              STORE_NAME
+            );
+
+          const request =
+            store.put(item);
+
+          request.onsuccess =
+            function() {
+
+              resolve();
+            };
+
+          request.onerror =
+            function(event) {
+
+              reject(
+                event.target.error
+              );
+            };
+        }
+      );
+    }
+
+    function deleteMotorcycle(id) {
+      return new Promise(
+        (resolve, reject) => {
+
+          const transaction =
+            db.transaction(
+              STORE_NAME,
+              "readwrite"
+            );
+
+          const store =
+            transaction.objectStore(
+              STORE_NAME
+            );
+
+          const request =
+            store.delete(id);
+
+          request.onsuccess =
+            function() {
+
+              resolve();
+            };
+
+          request.onerror =
+            function(event) {
+
+              reject(
+                event.target.error
+              );
+            };
+        }
+      );
+    }
+
+    function fileToDataURL(file) {
+      return new Promise(
+        (resolve, reject) => {
+
+          const reader =
+            new FileReader();
+
+          reader.onload =
+            function() {
+
+              resolve(
+                reader.result
+              );
+            };
+
+          reader.onerror =
+            function() {
+
+              reject(
+                new Error(
+                  "Unable to read photo."
+                )
+              );
+            };
+
+          reader.readAsDataURL(file);
+        }
+      );
+    }
+
+    async function compressImage(file) {
+
+      const originalDataURL =
+        await fileToDataURL(file);
+
+      return new Promise(
+        (resolve, reject) => {
+
+          const image =
+            new Image();
+
+          image.onload =
+            function() {
+
+              const MAX_DIMENSION =
+                1800;
+
+              let width =
+                image.naturalWidth;
+
+              let height =
+                image.naturalHeight;
+
+              if (
+                width > MAX_DIMENSION ||
+                height > MAX_DIMENSION
+              ) {
+
+                const ratio =
+                  Math.min(
+                    MAX_DIMENSION / width,
+                    MAX_DIMENSION / height
+                  );
+
+                width =
+                  Math.round(
+                    width * ratio
+                  );
+
+                height =
+                  Math.round(
+                    height * ratio
+                  );
+              }
+
+              const canvas =
+                document.createElement(
+                  "canvas"
+                );
+
+              canvas.width =
+                width;
+
+              canvas.height =
+                height;
+
+              const context =
+                canvas.getContext(
+                  "2d"
+                );
+
+              context.drawImage(
+                image,
+                0,
+                0,
+                width,
+                height
+              );
+
+              const compressed =
+                canvas.toDataURL(
+                  "image/jpeg",
+                  0.86
+                );
+
+              resolve(compressed);
+            };
+
+          image.onerror =
+            function() {
+
+              reject(
+                new Error(
+                  "Unable to process photo."
+                )
+              );
+            };
+
+          image.src =
+            originalDataURL;
+        }
+      );
+    }
+
+    function render() {
+
+      if (
+        motorcycles.length === 0
+      ) {
+
+        emptyState.classList.remove(
+          "hidden"
+        );
+
+        photoStage.classList.add(
+          "hidden"
+        );
+
+        bottomGradient.classList.add(
+          "hidden"
+        );
+
+        captionArea.classList.add(
+          "hidden"
+        );
+
+        controls.classList.add(
+          "hidden"
+        );
+
+        return;
+      }
+
+      if (
+        currentIndex < 0
+      ) {
+        currentIndex = 0;
+      }
+
+      if (
+        currentIndex >
+        motorcycles.length - 1
+      ) {
+        currentIndex =
+          motorcycles.length - 1;
+      }
+
+      const motorcycle =
+        motorcycles[currentIndex];
+
+      emptyState.classList.add(
+        "hidden"
+      );
+
+      photoStage.classList.remove(
+        "hidden"
+      );
+
+      bottomGradient.classList.remove(
+        "hidden"
+      );
+
+      captionArea.classList.remove(
+        "hidden"
+      );
+
+      controls.classList.remove(
+        "hidden"
+      );
+
+      photo.src =
+        motorcycle.photo;
+
+      bikeName.textContent =
+        motorcycle.name ||
+        "Untitled";
+
+      counter.textContent =
+        `${currentIndex + 1} / ${motorcycles.length}`;
+
+      photoStage.style.transform =
+        "translateX(0px)";
+
+      photoStage.style.opacity =
+        "1";
+    }
+
+    function animateToNext() {
+
+      if (
+        currentIndex >=
+        motorcycles.length - 1
+      ) {
+
+        bounceBack();
+
+        return;
+      }
+
+      photoStage.classList.remove(
+        "dragging"
+      );
+
+      photoStage.style.transform =
+        "translateX(-100%)";
+
+      photoStage.style.opacity =
+        "0";
+
+      setTimeout(
+        function() {
+
+          currentIndex += 1;
+
+          photoStage.style.transition =
+            "none";
+
+          photoStage.style.transform =
+            "translateX(100%)";
+
+          render();
+
+          requestAnimationFrame(
+            function() {
+
+              requestAnimationFrame(
+                function() {
+
+                  photoStage.style.transition =
+                    "transform 260ms ease, opacity 260ms ease";
+
+                  photoStage.style.transform =
+                    "translateX(0)";
+
+                  photoStage.style.opacity =
+                    "1";
+                }
+              );
+            }
+          );
+        },
+        220
+      );
+    }
+
+    function animateToPrevious() {
+
+      if (
+        currentIndex <= 0
+      ) {
+
+        bounceBack();
+
+        return;
+      }
+
+      photoStage.classList.remove(
+        "dragging"
+      );
+
+      photoStage.style.transform =
+        "translateX(100%)";
+
+      photoStage.style.opacity =
+        "0";
+
+      setTimeout(
+        function() {
+
+          currentIndex -= 1;
+
+          photoStage.style.transition =
+            "none";
+
+          photoStage.style.transform =
+            "translateX(-100%)";
+
+          render();
+
+          requestAnimationFrame(
+            function() {
+
+              requestAnimationFrame(
+                function() {
+
+                  photoStage.style.transition =
+                    "transform 260ms ease, opacity 260ms ease";
+
+                  photoStage.style.transform =
+                    "translateX(0)";
+
+                  photoStage.style.opacity =
+                    "1";
+                }
+              );
+            }
+          );
+        },
+        220
+      );
+    }
+
+    function bounceBack() {
+
+      photoStage.classList.remove(
+        "dragging"
+      );
+
+      photoStage.style.transform =
+        "translateX(0px)";
+
+      photoStage.style.opacity =
+        "1";
+    }
+
+    gallery.addEventListener(
+      "touchstart",
+      function(event) {
+
+        if (
+          motorcycles.length === 0
+        ) {
+          return;
+        }
+
+        if (
+          event.touches.length !== 1
+        ) {
+          return;
+        }
+
+        const touch =
+          event.touches[0];
+
+        touchStartX =
+          touch.clientX;
+
+        touchStartY =
+          touch.clientY;
+
+        touchCurrentX =
+          touchStartX;
+
+        dragging =
+          true;
+
+        photoStage.classList.add(
+          "dragging"
+        );
+      },
+      {
+        passive: true
+      }
+    );
+
+    gallery.addEventListener(
+      "touchmove",
+      function(event) {
+
+        if (
+          !dragging
+        ) {
+          return;
+        }
+
+        if (
+          event.touches.length !== 1
+        ) {
+          return;
+        }
+
+        const touch =
+          event.touches[0];
+
+        touchCurrentX =
+          touch.clientX;
+
+        const deltaX =
+          touchCurrentX -
+          touchStartX;
+
+        const deltaY =
+          touch.clientY -
+          touchStartY;
+
+        if (
+          Math.abs(deltaY) >
+          Math.abs(deltaX)
+        ) {
+          return;
+        }
+
+        let adjustedDelta =
+          deltaX;
+
+        if (
+          currentIndex === 0 &&
+          deltaX > 0
+        ) {
+
+          adjustedDelta =
+            deltaX * 0.25;
+        }
+
+        if (
+          currentIndex ===
+            motorcycles.length - 1 &&
+          deltaX < 0
+        ) {
+
+          adjustedDelta =
+            deltaX * 0.25;
+        }
+
+        photoStage.style.transform =
+          `translateX(${adjustedDelta}px)`;
+      },
+      {
+        passive: true
+      }
+    );
+
+    gallery.addEventListener(
+      "touchend",
+      function() {
+
+        if (
+          !dragging
+        ) {
+          return;
+        }
+
+        dragging =
+          false;
+
+        const deltaX =
+          touchCurrentX -
+          touchStartX;
+
+        photoStage.classList.remove(
+          "dragging"
+        );
+
+        if (
+          deltaX <=
+          -SWIPE_TRIGGER
+        ) {
+
+          animateToNext();
+
+          return;
+        }
+
+        if (
+          deltaX >=
+          SWIPE_TRIGGER
+        ) {
+
+          animateToPrevious();
+
+          return;
+        }
+
+        bounceBack();
+      },
+      {
+        passive: true
+      }
+    );
+
+    gallery.addEventListener(
+      "touchcancel",
+      function() {
+
+        dragging =
+          false;
+
+        bounceBack();
+      },
+      {
+        passive: true
+      }
+    );
+
+    addButton.addEventListener(
+      "click",
+      function() {
+
+        photoInput.value =
+          "";
+
+        photoInput.click();
+      }
+    );
+
+    photoInput.addEventListener(
+      "change",
+      async function() {
+
+        const file =
+          photoInput.files &&
+          photoInput.files[0];
+
+        if (
+          !file
+        ) {
+          return;
+        }
+
+        try {
+
+          pendingPhoto =
+            await compressImage(file);
+
+          editingMode =
+            false;
+
+          nameModalTitle.textContent =
+            "Name Your Mistress";
+
+          nameInput.value =
+            "";
+
+          nameModal.classList.remove(
+            "hidden"
+          );
+
+          setTimeout(
+            function() {
+
+              nameInput.focus();
+            },
+            150
+          );
+
+        } catch (error) {
+
+          alert(
+            "That photo could not be added."
+          );
+        }
+      }
+    );
+
+    editButton.addEventListener(
+      "click",
+      function() {
+
+        if (
+          motorcycles.length === 0
+        ) {
+          return;
+        }
+
+        editingMode =
+          true;
+
+        const motorcycle =
+          motorcycles[currentIndex];
+
+        nameModalTitle.textContent =
+          "Edit Name";
+
+        nameInput.value =
+          motorcycle.name || "";
+
+        nameModal.classList.remove(
+          "hidden"
+        );
+
+        setTimeout(
+          function() {
+
+            nameInput.focus();
+
+            nameInput.select();
+          },
+          150
+        );
+      }
+    );
+
+    cancelNameButton.addEventListener(
+      "click",
+      function() {
+
+        nameModal.classList.add(
+          "hidden"
+        );
+
+        pendingPhoto =
+          null;
+
+        editingMode =
+          false;
+      }
+    );
+
+    saveNameButton.addEventListener(
+      "click",
+      async function() {
+
+        const enteredName =
+          nameInput.value.trim();
+
+        const finalName =
+          enteredName ||
+          "Untitled";
+
+        try {
+
+          if (
+            editingMode
+          ) {
+
+            const motorcycle =
+              motorcycles[currentIndex];
+
+            motorcycle.name =
+              finalName;
+
+            await updateMotorcycle(
+              motorcycle
+            );
+
+          } else {
+
+            if (
+              !pendingPhoto
+            ) {
+              return;
+            }
+
+            const item = {
+              name:
+                finalName,
+
+              photo:
+                pendingPhoto,
+
+              created:
+                Date.now()
+            };
+
+            const id =
+              await addMotorcycle(
+                item
+              );
+
+            item.id =
+              id;
+
+            motorcycles.push(
+              item
+            );
+
+            currentIndex =
+              motorcycles.length - 1;
+          }
+
+          nameModal.classList.add(
+            "hidden"
+          );
+
+          pendingPhoto =
+            null;
+
+          editingMode =
+            false;
+
+          render();
+
+        } catch (error) {
+
+          alert(
+            "Your motorcycle could not be saved."
+          );
+        }
+      }
+    );
+
+    nameInput.addEventListener(
+      "keydown",
+      function(event) {
+
+        if (
+          event.key ===
+          "Enter"
+        ) {
+
+          event.preventDefault();
+
+          saveNameButton.click();
+        }
+      }
+    );
+
+    deleteButton.addEventListener(
+      "click",
+      function() {
+
+        if (
+          motorcycles.length === 0
+        ) {
+          return;
+        }
+
+        deleteModal.classList.remove(
+          "hidden"
+        );
+      }
+    );
+
+    cancelDeleteButton.addEventListener(
+      "click",
+      function() {
+
+        deleteModal.classList.add(
+          "hidden"
+        );
+      }
+    );
+
+    confirmDeleteButton.addEventListener(
+      "click",
+      async function() {
+
+        if (
+          motorcycles.length === 0
+        ) {
+          return;
+        }
+
+        const motorcycle =
+          motorcycles[currentIndex];
+
+        try {
+
+          await deleteMotorcycle(
+            motorcycle.id
+          );
+
+          motorcycles.splice(
+            currentIndex,
+            1
+          );
+
+          if (
+            currentIndex >=
+            motorcycles.length
+          ) {
+
+            currentIndex =
+              Math.max(
+                0,
+                motorcycles.length - 1
+              );
+          }
+
+          deleteModal.classList.add(
+            "hidden"
+          );
+
+          render();
+
+        } catch (error) {
+
+          alert(
+            "The motorcycle could not be deleted."
+          );
+        }
+      }
+    );
+
+    nameModal.addEventListener(
+      "click",
+      function(event) {
+
+        if (
+          event.target ===
+          nameModal
+        ) {
+
+          cancelNameButton.click();
+        }
+      }
+    );
+
+    deleteModal.addEventListener(
+      "click",
+      function(event) {
+
+        if (
+          event.target ===
+          deleteModal
+        ) {
+
+          cancelDeleteButton.click();
+        }
+      }
+    );
+
+    async function startApp() {
+
+      try {
+
+        await openDatabase();
+
+        motorcycles =
+          await getAllMotorcycles();
+
+        currentIndex =
+          0;
+
+        render();
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "My Mistresses could not open its photo storage."
+        );
+      }
+    }
+
+    startApp();
+
+    if (
+      "serviceWorker" in navigator
+    ) {
+
+      window.addEventListener(
+        "load",
+        function() {
+
+          navigator.serviceWorker
+            .register("./sw.js")
+            .catch(
+              function(error) {
+
+                console.log(
+                  "Service worker not registered:",
+                  error
+                );
+              }
+            );
+        }
+      );
+    }
+  </script>
+
+</body>
+</html>
